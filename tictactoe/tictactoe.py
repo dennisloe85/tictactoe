@@ -6,7 +6,9 @@
 
 """
 
+from copy import deepcopy
 from enum import Enum, auto
+from random import randint
 
 class TicTacToe:
 
@@ -27,6 +29,23 @@ class TicTacToe:
                       [empty, empty, empty],
                       [empty, empty, empty]]
 
+    def _get_random_move(cls, board):
+        available_pos = []
+
+        # Get list of available moves
+        for v in range(0, len(board)):
+            for h in range(0, len(board[v])):
+                if board[v][h] == cls.BoardElem.EMPTY:
+                    available_pos.append([h,v])
+
+
+        if len(available_pos) == 0:
+            return []
+        else:
+            # Chose randomly from available moves
+            return available_pos[ randint( 0, len(available_pos) - 1 ) ]
+
+   
     def _show_board(cls, board):
         print() 
         print("      A     B     C\n")
@@ -63,10 +82,10 @@ class TicTacToe:
 
         return won_player
 
-    def run(self):
+    def run(self, ai_active = True):
         self._init()
 
-        next_player = self.BoardElem.X
+        curr_player = self.BoardElem.X
 
         print()
         print("############ TicTacToe ############")
@@ -92,43 +111,51 @@ class TicTacToe:
                 print()
                 run_game = False
                 break
-        
-            # Get input until it's valid
-            next_pos_user = []
-            while(next_pos_user == []):
 
-                input_pos = input("It's " + next_player.name + "'s turn. Please select your next position (e.g. A2): ")     
-                print()      
 
-                # Remove whitespaces, tabs, new lines etc.
-                input_pos = "".join( input_pos.split() )
-                input_pos = input_pos.upper()
 
-                # Check length
-                if len(input_pos) != 2:
-                    print("Wrong format entered!")
-                    print()
-                    continue 
+            # Get next move either from AI for "O" or from human input
+            next_pos = []
+            if ai_active and curr_player == self.BoardElem.O:
+                next_pos = self._get_random_move(self.board)
+                print("It's " + curr_player.name + "'s turn. " + curr_player.name + " selects " + chr(ord("A") + next_pos[0]) + str(next_pos[1] + 1) + ".")
+            else:
+                # Get input until it's valid
+                while(next_pos == []):
 
-                # Check format (e.g. A2)
-                if not (input_pos[0] in ["A", "B", "C"] and input_pos[1] in ["1", "2", "3"]):
-                    print("Wrong format entered!")
-                    print()
-                    continue 
+                    input_pos = input("It's " + curr_player.name + "'s turn. Please select your next position (e.g. A2): ")     
+                    print()      
 
-                # Get indices
-                next_pos_user_tmp = [ ord(input_pos[0]) - ord("A") , ord(input_pos[1]) - ord("1")]
-                if self.board[ next_pos_user_tmp[1]][next_pos_user_tmp[0]] != self.BoardElem.EMPTY:
-                    print("Position is already occupied!")
-                    continue                     
+                    # Remove whitespaces, tabs, new lines etc.
+                    input_pos = "".join( input_pos.split() )
+                    input_pos = input_pos.upper()
 
-                next_pos_user = next_pos_user_tmp
+                    # Check length
+                    if len(input_pos) != 2:
+                        print("Wrong format entered!")
+                        print()
+                        continue 
+
+                    # Check format (e.g. A2)
+                    if not (input_pos[0] in ["A", "B", "C"] and input_pos[1] in ["1", "2", "3"]):
+                        print("Wrong format entered!")
+                        print()
+                        continue 
+
+                    # Get indices
+                    next_pos_user_tmp = [ ord(input_pos[0]) - ord("A") , ord(input_pos[1]) - ord("1")]
+                    if self.board[ next_pos_user_tmp[1]][next_pos_user_tmp[0]] != self.BoardElem.EMPTY:
+                        print("Position is already occupied!")
+                        continue                     
+
+                    next_pos = next_pos_user_tmp
              
             # Set player's choice
-            self.board[ next_pos_user_tmp[1]][next_pos_user_tmp[0]] = next_player
+            self.board[ next_pos[1] ][ next_pos[0] ] = curr_player
 
             # Who's next?
-            next_player = self.BoardElem.X if next_player == self.BoardElem.O else self.BoardElem.O
+            curr_player = self.BoardElem.X if curr_player == self.BoardElem.O else self.BoardElem.O
+
 
 
 
@@ -137,4 +164,4 @@ class TicTacToe:
 # Start application
 if __name__ == '__main__':
     game = TicTacToe()
-    game.run()
+    game.run(ai_active = True)
